@@ -9,6 +9,7 @@ RUN apt-get update \
        ffmpeg \
        tzdata \
        curl \
+       pipx \
     && rm -rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man \
     && apt-get clean
@@ -58,6 +59,7 @@ HEALTHCHECK --interval=1m --timeout=30s CMD curl -s $(namer url)/api/healthcheck
 ENTRYPOINT ["namer", "watchdog"]
 
 FROM base
+ENV PATH="/root/.local/bin:$PATH"
 COPY --from=build /work/dist/namer-*.tar.gz /
 RUN pipx install /namer-*.tar.gz \
     && rm /namer-*.tar.gz
