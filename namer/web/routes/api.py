@@ -126,16 +126,30 @@ def get_routes(config: NamerConfig, command_queue: Queue) -> Blueprint:
         data = request.json
         if data:
             try:
-                # Update the config updater object
                 for key, value in data.items():
                     info = field_info.get(key)
                     if info and info[0]:
                         section = info[0]
-                        # Set value as string since it's going back to an ini file
-                        config.config_updater[section][key].value = str(value)
-                
-                # Write changes back to the actual configuration file
-                config.config_updater.update_file()
+                        if not config.config_updater.has_section(section):
+                            config.config_updater.add_section(section)
+                        if not config.config_updater[section].has_option(key):
+                            config.config_updater[section][key] = str(value)
+                        else:
+                            config.config_updater[section][key].value = str(value)
+
+                # Update in-memory config for immediate use
+                from namer.configuration_utils import from_config
+                from_config(config.config_updater, config)
+
+                # Persist to file, falling back to default .namer.cfg
+                config_file = getattr(config, 'config_file', None) or Path('.namer.cfg')
+                if isinstance(config_file, str):
+                    config_file = Path(config_file)
+
+                config_file.parent.mkdir(parents=True, exist_ok=True)
+                config_file.write_text(str(config.config_updater), encoding='UTF-8')
+                config.config_file = config_file
+
                 return jsonify({'success': True, 'message': 'Settings saved successfully.'})
             except Exception as e:
                 return jsonify({'success': False, 'error': str(e)})

@@ -3,8 +3,10 @@ Tests namer_configparser
 """
 
 from configupdater import ConfigUpdater
+import tempfile
 import unittest
 from importlib import resources
+from pathlib import Path
 
 from loguru import logger
 
@@ -54,3 +56,25 @@ class UnitTestAsTheDefaultExecution(unittest.TestCase):
         updated.read_string(files_no_sites_with_no_date_info)
         double_read = from_config(updated, double_read)
         self.assertIn('badsite', double_read.sites_with_no_date_info)
+
+    def test_default_config_and_save_settings(self) -> None:
+        from namer.configuration_utils import default_config
+
+        with tempfile.TemporaryDirectory(prefix='test') as tmp_dir:
+            cfg_path = Path(tmp_dir) / 'namer.cfg'
+            if hasattr(resources, 'files'):
+                default_val = resources.files('namer').joinpath('namer.cfg.default').read_text()
+            else:
+                default_val = resources.read_text('namer', 'namer.cfg.default')
+            cfg_path.write_text(default_val, encoding='UTF-8')
+
+            config = default_config(cfg_path)
+            self.assertEqual(config.config_file, cfg_path)
+            original_token = config.porndb_token
+            config.config_updater['namer']['porndb_token'].value = 'test-token'
+            config.config_file.write_text(str(config.config_updater), encoding='UTF-8')
+
+            reloaded = default_config(cfg_path)
+            self.assertEqual(reloaded.porndb_token, 'test-token')
+            self.assertNotEqual(original_token, reloaded.porndb_token)
+

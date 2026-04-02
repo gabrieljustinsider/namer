@@ -398,6 +398,7 @@ def default_config(user_set: Optional[Path] = None) -> NamerConfig:
     namer_config.config_updater = config
 
     user_config = ConfigUpdater(allow_no_value=True)
+    config_file = None
     cfg_paths = [
         user_set,
         os.environ.get('NAMER_CONFIG'),
@@ -414,6 +415,22 @@ def default_config(user_set: Optional[Path] = None) -> NamerConfig:
 
         if file.is_file():
             user_config.read(file, encoding='UTF-8')
+            config_file = file
             break
 
-    return from_config(user_config, namer_config)
+    # Merge user values from file into default config updater so all keys remain available
+    if config_file:
+        for section in user_config.sections():
+            if not config.has_section(section):
+                config.add_section(section)
+            for key, option in user_config[section].items():
+                if config.has_option(section, key):
+                    config[section][key].value = option.value
+                else:
+                    config[section][key] = option.value
+
+    namer_config = from_config(config, namer_config)
+    namer_config.config_updater = config
+    namer_config.config_file = config_file or Path('.namer.cfg')
+
+    return namer_config
