@@ -1,11 +1,15 @@
 {% extends "partials/base.html" %}
 {% block title %}Main{% endblock %}
 {% block content %}
-    <ul class="list-group mt-1">
-        {% for link, name in links %}
-            <li class="list-group-item">
-                <a href="{{ link }}">{{ name.title() }}</a>
-            </li>
-        {% endfor %}
-    </ul>
+    <div class="bg-white rounded-3 shadow-sm">
+        <ul class="list-group list-group-flush">
+            {% for link, name in links %}
+                <li class="list-group-item">
+                    <a href="{{ link }}" class="text-decoration-none">
+                        <i class="bi bi-chevron-right"></i> {{ name.title() }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
 {% endblock %}

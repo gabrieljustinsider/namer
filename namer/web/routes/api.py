@@ -10,6 +10,7 @@ from flask.wrappers import Response
 
 from namer.command import make_command_relative_to, move_command_files
 from namer.configuration import NamerConfig
+from namer.configuration_utils import field_info
 from namer.web.actions import delete_file, get_failed_files, get_phash_results, get_queue_size, get_queued_files, get_search_results, human_format, read_failed_log_file
 
 
@@ -119,6 +120,27 @@ def get_routes(config: NamerConfig, command_queue: Queue) -> Blueprint:
             }
 
         return jsonify(res)
+
+    @blueprint.route('/v1/save_settings', methods=['POST'])
+    def save_settings() -> Response:
+        data = request.json
+        if data:
+            try:
+                # Update the config updater object
+                for key, value in data.items():
+                    info = field_info.get(key)
+                    if info and info[0]:
+                        section = info[0]
+                        # Set value as string since it's going back to an ini file
+                        config.config_updater[section][key].value = str(value)
+                
+                # Write changes back to the actual configuration file
+                config.config_updater.update_file()
+                return jsonify({'success': True, 'message': 'Settings saved successfully.'})
+            except Exception as e:
+                return jsonify({'success': False, 'error': str(e)})
+
+        return jsonify({'success': False, 'error': 'No data provided'})
 
     @blueprint.route('/healthcheck', methods=['GET'])
     def healthcheck() -> Response:

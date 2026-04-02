@@ -2,13 +2,13 @@
 {% block title %}Failed files{% endblock %}
 {% set active_page = "failed" %}
 {% block content %}
-    <div class="row mb-1">
-        <h5 class="card-title col">Unmatched Files</h5>
-        <div class="col">
-            <button id="refreshFiles" type="button" class="btn btn-secondary float-end ms-1" data-target="files" title="Refresh">
+    <div class="row mb-3">
+        <h5 class="card-title col mb-0">Unmatched Files</h5>
+        <div class="col d-flex gap-2 justify-content-end">
+            <button id="refreshFiles" type="button" class="btn btn-secondary btn-sm" data-target="files" title="Refresh">
                 <i class="bi bi-arrow-clockwise"></i>
             </button>
-            <div id="tableButtons" class="float-end ms-1"></div>
+            <div id="tableButtons" class="d-flex gap-2"></div>
         </div>
     </div>
     <div class="card-text">
@@ -70,21 +70,12 @@
             </div>
         </div>
     </div>
-    <div id="searchResults" class="modal fade" tabindex="-1" aria-labelledby="modalSearchResultsLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-fullscreen-lg-down modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="modalSearchResultsLabel" class="modal-title text-truncate">Search Result <span></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="progress"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-target="#searchForm" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
+    <div id="searchResults" class="offcanvas offcanvas-end shadow" tabindex="-1" aria-labelledby="searchPaneLabel">
+        <div class="offcanvas-header border-bottom bg-light">
+            <h5 id="searchPaneLabel" class="mb-0">Search Results: <span id="paneSearchTitle" class="text-muted"></span></h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0" id="paneResultsBody">
         </div>
     </div>
     {% if config.allow_delete_files %}

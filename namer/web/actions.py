@@ -59,7 +59,7 @@ def get_queue_size(queue: Queue) -> int:
     return queue.qsize()
 
 
-def command_to_file_info(command: Command, config: NamerConfig) -> Dict:
+def command_to_file_info(command: Command, config: NamerConfig, status: str = 'Pending') -> Dict:
     stat = command.target_movie_file.stat()
 
     sub_path = str(command.target_movie_file.resolve().relative_to(command.config.failed_dir.resolve())) if is_relative_to(command.target_movie_file, command.config.failed_dir) else None
@@ -69,6 +69,7 @@ def command_to_file_info(command: Command, config: NamerConfig) -> Dict:
         'ext': command.target_movie_file.suffix[1:].upper(),
         'update_time': int(stat.st_mtime),
         'size': stat.st_size,
+        'status': status
     }
 
     percentage, phash, oshash = 0.0, '', ''

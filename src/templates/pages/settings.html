@@ -2,25 +2,41 @@
 {% block title %}Settings{% endblock %}
 {% set active_page = "settings" %}
 {% block content %}
-    <form>
-        {% for section, settings in config.to_dict().items() %}
-            <p>[{{ section }}]</p>
-            {% for key, value in settings.items() %}
-                <div class="{% if value is not boolean %}form-floating {% endif %}mb-3">
-                    {% if value is string or value is none %}
-                        <input disabled class="form-control" type="text" id="{{ key }}" value="{{ value }}" placeholder>
-                    {% elif value|is_list %}
-                        <input disabled class="form-control" type="text" id="{{ key }}" value="{{ value|from_list }}"  placeholder>
-                    {% elif value|is_dict %}
-                        <input disabled class="form-control" type="text" id="{{ key }}" value="{{ value }}" placeholder>
-                    {% elif value is integer %}
-                        <input disabled class="form-control" type="number" id="{{ key }}" value="{{ value }}" placeholder>
-                    {% elif value is boolean %}
-                        <input disabled class="form-check-input" type="checkbox" id="{{ key }}"{% if value %} checked{% endif %}>
-                    {% endif %}
-                    <label for="{{ key }}">{{ key }}</label>
-                </div>
-            {% endfor %}
-        {% endfor %}
-    </form>
+    <div class="card shadow-sm rounded-3 mb-4">
+        <div class="card-header bg-light rounded-top-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Configuration Settings</h5>
+            <button id="saveSettingsBtn" class="btn btn-primary btn-sm">Save Changes</button>
+        </div>
+        <div class="card-body">
+            <form id="settingsForm">
+                {% for section, settings in config.to_dict().items() %}
+                    <h6 class="text-muted mt-4 mb-3 border-bottom pb-2 fw-600">[{{ section }}]</h6>
+                    <div class="row g-3">
+                        {% for key, value in settings.items() %}
+                            <div class="col-md-6">
+                                <label for="{{ key }}" class="form-label text-capitalize">{{ key | replace('_', ' ') }}</label>
+                                {% if value is string or value is none %}
+                                    <input class="form-control form-control-sm setting-input shadow-sm" type="text" id="{{ key }}" value="{{ value or '' }}">
+                                {% elif value|is_list %}
+                                    <input class="form-control form-control-sm setting-input shadow-sm" type="text" id="{{ key }}" value="{{ value|from_list }}">
+                                {% elif value|is_dict %}
+                                    <input class="form-control form-control-sm setting-input shadow-sm" type="text" id="{{ key }}" value="{{ value }}">
+                                {% elif value is integer %}
+                                    <input class="form-control form-control-sm setting-input shadow-sm" type="number" id="{{ key }}" value="{{ value }}">
+                                {% elif value is boolean %}
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input setting-input" type="checkbox" id="{{ key }}" {% if value %} checked {% endif %}>
+                                        <label class="form-check-label" for="{{ key }}">{{ key | replace('_', ' ') }}</label>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </form>
+        </div>
+        <div class="card-footer bg-light rounded-bottom-3 border-top">
+            <small class="text-muted">Your changes will be saved to namer.cfg</small>
+        </div>
+    </div>
 {% endblock %}

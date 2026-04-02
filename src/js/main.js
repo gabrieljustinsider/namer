@@ -20,8 +20,8 @@ window.jQuery = $
 
 const filesResult = $('#filesResult')
 const tableButtons = $('#tableButtons')
-const resultForm = $('#searchResults .modal-body')
-const resultFormTitle = $('#modalSearchResultsLabel span')
+const searchPaneBody = $('#paneResultsBody')
+const searchPaneTitle = $('#paneSearchTitle')
 const logForm = $('#logFile .modal-body')
 const logFormTitle = $('#modalLogsLabel span')
 const searchForm = $('#searchForm')
@@ -33,11 +33,46 @@ const deleteFile = $('#deleteFile')
 const queueSize = $('#queueSize')
 const refreshFiles = $('#refreshFiles')
 const deleteButton = $('#deleteButton')
+const saveSettingsBtn = $('#saveSettingsBtn')
 
 let modalButton
 
+saveSettingsBtn.on('click', function (e) {
+  e.preventDefault()
+  const btn = $(this)
+  btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...')
+
+  let settingsData = {}
+  $('.setting-input').each(function () {
+    const input = $(this)
+    const id = input.attr('id')
+    const value = input.is(':checkbox') ? input.is(':checked') : input.val()
+    settingsData[id] = value
+  })
+
+  $.ajax({
+    url: './api/v1/save_settings',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify(settingsData),
+    success: function (response) {
+      if (response.success) {
+        btn.removeClass('btn-primary').addClass('btn-success').text('Saved!')
+        setTimeout(() => btn.removeClass('btn-success').addClass('btn-primary').text('Save Changes'), 3000)
+      } else {
+        alert('Error saving settings: ' + response.error)
+        btn.text('Save Changes')
+      }
+    },
+    error: function () {
+      alert('Error saving settings')
+      btn.text('Save Changes')
+    }
+  })
+})
+
 searchButton.on('click', function () {
-  resultForm.html(Helpers.getProgressBar())
+  searchPaneBody.html(Helpers.getProgressBar())
 
   const data = {
     query: queryInput.val(),
@@ -45,31 +80,37 @@ searchButton.on('click', function () {
     type: queryType.val()
   }
 
-  const title = escape(`(${data.file}) [${data.query}]`)
-  resultFormTitle.html(title)
-  resultFormTitle.attr('title', title)
+  const title = escape(data.query)
+  searchPaneTitle.html(title)
+
+  // Show the offcanvas pane instead of the modal
+  var bsOffcanvas = new bootstrap.Offcanvas(document.getElementById('searchResults'))
+  bsOffcanvas.show()
 
   Helpers.request('./api/v1/get_search', data, function (data) {
-    Helpers.render('searchResults', data, resultForm, function (selector) {
+    Helpers.render('searchResults', data, searchPaneBody, function (selector) {
       Helpers.initTooltips(selector)
     })
   })
 })
 
 phashButton.on('click', function () {
-  resultForm.html(Helpers.getProgressBar())
+  searchPaneBody.html(Helpers.getProgressBar())
 
   const data = {
     file: queryInput.data('file'),
     type: queryType.val()
   }
 
-  const title = escape(`(${data.file})`)
-  resultFormTitle.html(title)
-  resultFormTitle.attr('title', title)
+  const title = escape(data.file)
+  searchPaneTitle.html(title)
+
+  // Show the offcanvas pane instead of the modal
+  var bsOffcanvas = new bootstrap.Offcanvas(document.getElementById('searchResults'))
+  bsOffcanvas.show()
 
   Helpers.request('./api/v1/get_phash', data, function (data) {
-    Helpers.render('searchResults', data, resultForm, function (selector) {
+    Helpers.render('searchResults', data, searchPaneBody, function (selector) {
       Helpers.initTooltips(selector)
     })
   })
@@ -126,7 +167,7 @@ searchForm.on('shown.bs.modal', function () {
   queryInput.focus()
 })
 
-resultForm.on('click', '.rename', rename)
+searchPaneBody.on('click', '.rename', rename)
 logForm.on('click', '.rename', rename)
 
 deleteButton.on('click', function () {

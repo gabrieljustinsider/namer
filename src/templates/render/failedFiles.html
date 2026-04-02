@@ -1,10 +1,12 @@
 {% if data %}
-    <table id="{{ active_page }}" class="table table-sm text-start align-middle w-100">
-        <thead>
+    <div class="bg-white rounded-3 shadow-sm">
+        <table id="{{ active_page }}" class="table table-sm table-hover table-borderless text-start align-middle w-100 mb-0">
+            <thead>
         <tr>
             <th scope="col" data-priority="-1">File Name</th>
             <th scope="col">Extension</th>
             <th scope="col">Date</th>
+            <th scope="col">Status</th>
             {% if config.add_complete_column and active_page == 'failed' %}
                 <th scope="col">Completed</th>
             {% endif %}
@@ -25,6 +27,15 @@
                 <td class="col text-break">{{ file['name'] }}</td>
                 <td class="col-1">{{ file['ext'] }}</td>
                 <td class="col-2" data-order="{{ file['update_time'] }}">{{ file['update_time']|timestamp_to_datetime|strftime('%d-%m-%Y %H:%M:%S') }}</td>
+                <td class="col-1">
+                    {% if file.status == 'Pending' %}
+                        <span class="badge bg-secondary rounded-pill">Pending</span>
+                    {% elif file.status == 'Processing' %}
+                        <span class="badge bg-primary rounded-pill"><i class="bi bi-arrow-repeat"></i> Processing</span>
+                    {% else %}
+                        <span class="badge bg-danger rounded-pill">Failed</span>
+                    {% endif %}
+                </td>
                 {% if config.add_complete_column and active_page == 'failed' %}
                     <td class="col-2" data-order="{{ file['log_time'] }}">{{ file['log_time']|timestamp_to_datetime|strftime('%d-%m-%Y %H:%M:%S') }}</td>
                 {% endif %}
@@ -42,7 +53,8 @@
             </tr>
         {% endfor %}
         </tbody>
-    </table>
+        </table>
+    </div>
 {% else %}
     <div class="col m-1 text-center">
         <span>No files found</span>
